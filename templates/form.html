@@ -2,18 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>User Registration Form</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .error-message {
             color: red;
         }
     </style>
+    <script>
+        async function checkUserExists() {
+            const email = document.getElementById("email").value;
+            const response = await fetch(`/check_user?email=${email}`);
+            const result = await response.json();
+            const submitButton = document.querySelector("button[type='submit']");
+            const message = document.getElementById("message");
+
+            if (result.exists) {
+                message.innerText = "User already exists";
+                submitButton.disabled = true;
+            } else {
+                message.innerText = "";
+                submitButton.disabled = false;
+            }
+        }
+
+        function validateForm(event) {
+            const email = document.getElementById("email").value;
+            if (email === "") {
+                event.preventDefault();
+                document.getElementById("message").innerText = "Email is required";
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">User Registration Form</h2>
-        <form action="/submit" method="post">
+        <form action="/submit" method="post" onsubmit="validateForm(event)">
             <div class="form-group">
                 <label for="name">Name:</label>
                 <input type="text" class="form-control" id="name" name="name" required minlength="2" maxlength="50" placeholder="Enter your name">
@@ -23,13 +49,17 @@
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
+                <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email" oninput="checkUserExists()">
                 <div class="invalid-feedback">
                     Please enter a valid email address.
                 </div>
             </div>
+            <p id="message" class="error-message"></p>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

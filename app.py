@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, JSONResponse
 
 from models import SessionLocal, User, Base, engine
 
@@ -41,3 +41,11 @@ async def submit(request: Request, name: str = Form(...), email: str = Form(...)
 @app.get("/confirmation")
 async def confirmation(request: Request):
     return templates.TemplateResponse("confirmation.html", {"request": request})
+
+
+@app.get("/check_user")
+async def check_user(email: str, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        return JSONResponse(status_code=200, content={"exists": True})
+    return JSONResponse(status_code=200, content={"exists": False})
