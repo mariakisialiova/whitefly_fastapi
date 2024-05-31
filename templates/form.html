@@ -11,22 +11,6 @@
         }
     </style>
     <script>
-        async function checkUserExists() {
-            const email = document.getElementById("email").value;
-            const response = await fetch(`/check_user?email=${email}`);
-            const result = await response.json();
-            const submitButton = document.querySelector("button[type='submit']");
-            const message = document.getElementById("message");
-
-            if (result.exists) {
-                message.innerText = "User already exists";
-                submitButton.disabled = true;
-            } else {
-                message.innerText = "";
-                submitButton.disabled = false;
-            }
-        }
-
         function validateForm(event) {
             const email = document.getElementById("email").value;
             if (email === "") {
@@ -49,12 +33,12 @@
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email" oninput="checkUserExists()">
+                <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
                 <div class="invalid-feedback">
                     Please enter a valid email address.
                 </div>
             </div>
-            <p id="message" class="error-message"></p>
+            <p id="message" class="error-message">{{ error if error else '' }}</p>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>

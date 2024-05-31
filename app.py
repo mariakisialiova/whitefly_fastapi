@@ -32,20 +32,25 @@ async def form(request: Request):
 
 @app.post("/submit")
 async def submit(request: Request, name: str = Form(...), email: str = Form(...), db: Session = Depends(get_db)):
-    new_user = User(name=name, email=email)
-    db.add(new_user)
-    db.commit()
-    return RedirectResponse(url="/confirmation", status_code=303)
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        return templates.TemplateResponse("form.html", {
+            "request": request,
+            "error": "User with this email already exists."
+        })
+    try:
+        new_user = User(name=name, email=email)
+        db.add(new_user)
+        db.commit()
+        return RedirectResponse(url="/confirmation", status_code=303)
+    except Exception as e:
+        db.rollback()
+        return templates.TemplateResponse("form.html", {
+            "request": request,
+            "error": f"An error occurred: {str(e)}"
+        })
 
 
 @app.get("/confirmation")
 async def confirmation(request: Request):
     return templates.TemplateResponse("confirmation.html", {"request": request})
-
-
-@app.get("/check_user")
-async def check_user(email: str, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user:
-        return JSONResponse(status_code=200, content={"exists": True})
-    return JSONResponse(status_code=200, content={"exists": False})
